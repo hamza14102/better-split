@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -14,7 +14,7 @@ import {
 import { USERS, GROUPS } from '../data/mockData';
 import theme from '../theme';
 
-const AddExpenseScreen = ({ navigation }) => {
+const AddExpenseScreen = ({ navigation, route }) => {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [selectedGroup, setSelectedGroup] = useState(null);
@@ -39,6 +39,13 @@ const AddExpenseScreen = ({ navigation }) => {
         setSelectedGroup(groupId);
         initializeMembers(groupId);
     };
+
+    // Pre-select group if passed via navigation
+    useEffect(() => {
+        if (route && route.params && route.params.groupId) {
+            handleGroupSelect(route.params.groupId);
+        }
+    }, [route]);
 
     const toggleMemberSelection = (memberId) => {
         setSelectedMembers(prev => ({
