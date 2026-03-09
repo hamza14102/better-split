@@ -16,7 +16,7 @@ const GroupsScreen = ({ navigation }) => {
         const user = getUserById(memberId);
         return (
             <Text key={memberId} style={styles.memberName}>
-                {user.name}{index < total - 1 ? ', ' : ''}
+                {user?.name || 'Unknown user'}{index < total - 1 ? ', ' : ''}
             </Text>
         );
     };

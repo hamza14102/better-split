@@ -36,7 +36,7 @@ const HomeScreen = ({ navigation }) => {
                 const user = getUserById(userId);
                 list.push({
                     id: userId,
-                    name: user.name,
+                    name: user?.name || 'Unknown user',
                     amount,
                     type: 'owed' // They owe you
                 });
@@ -50,7 +50,7 @@ const HomeScreen = ({ navigation }) => {
                 const user = getUserById(userId);
                 list.push({
                     id: userId,
-                    name: user.name,
+                    name: user?.name || 'Unknown user',
                     amount,
                     type: 'owes' // You owe them
                 });

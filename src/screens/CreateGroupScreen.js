@@ -39,8 +39,8 @@ const CreateGroupScreen = ({ navigation }) => {
             return;
         }
 
-        // Create new group object
-        const newGroup = {
+        // Create new group object (placeholder until persistence is wired)
+        const _newGroup = {
             id: String(Date.now()), // Generate a unique ID
             name: groupName,
             members: selectedMemberIds,
@@ -48,8 +48,6 @@ const CreateGroupScreen = ({ navigation }) => {
             createdAt: new Date().toISOString(),
         };
 
-        // In a real app, you would save this to a database or state management store
-        console.log('New group created:', newGroup);
 
         // Navigate back
         Alert.alert('Success', 'Group created successfully', [
