@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -14,13 +14,43 @@ import {
 import { USERS, GROUPS } from '../data/mockData';
 import theme from '../theme';
 
-const AddExpenseScreen = ({ navigation }) => {
+const AddExpenseScreen = ({ route, navigation }) => {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [selectedMembers, setSelectedMembers] = useState({});
     const [splitEqually, setSplitEqually] = useState(true);
     const [paidBy, setPaidBy] = useState('1'); // Default to current user
+
+    const preselectedGroupId = route?.params?.groupId;
+
+    const selectedGroupData = useMemo(
+        () => GROUPS.find(g => g.id === selectedGroup),
+        [selectedGroup]
+    );
+
+    const paidByOptions = useMemo(() => {
+        if (!selectedGroupData) return USERS;
+        return USERS.filter(user => selectedGroupData.members.includes(user.id));
+    }, [selectedGroupData]);
+
+    useEffect(() => {
+        if (preselectedGroupId && GROUPS.some(group => group.id === preselectedGroupId)) {
+            setSelectedGroup(preselectedGroupId);
+            initializeMembers(preselectedGroupId);
+        }
+    }, [preselectedGroupId]);
+
+    useEffect(() => {
+        if (paidByOptions.length === 0) {
+            return;
+        }
+
+        const isCurrentPayerValid = paidByOptions.some(user => user.id === paidBy);
+        if (!isCurrentPayerValid) {
+            setPaidBy(paidByOptions[0].id);
+        }
+    }, [paidBy, paidByOptions]);
 
     // Initialize all members as selected
     const initializeMembers = (groupId) => {
@@ -71,7 +101,7 @@ const AddExpenseScreen = ({ navigation }) => {
         }
 
         // Create new expense object
-        const newExpense = {
+        const _newExpense = {
             id: String(Date.now()), // Generate a unique ID
             groupId: selectedGroup,
             description,
@@ -81,9 +111,6 @@ const AddExpenseScreen = ({ navigation }) => {
             splitType: splitEqually ? 'equal' : 'custom', // We only implement equal splitting for now
             date: new Date().toISOString(),
         };
-
-        // In a real app, you would save this to a database or state management store
-        console.log('New expense created:', newExpense);
 
         // Navigate back
         Alert.alert('Success', 'Expense added successfully', [
@@ -171,7 +198,7 @@ const AddExpenseScreen = ({ navigation }) => {
                         showsHorizontalScrollIndicator={false}
                         style={styles.usersScrollView}
                     >
-                        {USERS.map(user => (
+                        {paidByOptions.map(user => (
                             <TouchableOpacity
                                 key={user.id}
                                 style={[
@@ -209,7 +236,7 @@ const AddExpenseScreen = ({ navigation }) => {
 
                     {selectedGroup && (
                         <View style={styles.membersContainer}>
-                            {GROUPS.find(g => g.id === selectedGroup)?.members.map(memberId => {
+                            {selectedGroupData?.members.map(memberId => {
                                 const user = USERS.find(u => u.id === memberId);
                                 return (
                                     <TouchableOpacity

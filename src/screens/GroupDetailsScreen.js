@@ -12,7 +12,7 @@ import { getGroupById, getGroupExpenses, getUserById } from '../data/mockData';
 import theme from '../theme';
 
 const GroupDetailsScreen = ({ route, navigation }) => {
-    const { groupId } = route.params;
+    const groupId = route?.params?.groupId;
     const [group, setGroup] = useState(null);
     const [expenses, setExpenses] = useState([]);
 
@@ -52,7 +52,7 @@ const GroupDetailsScreen = ({ route, navigation }) => {
                     <Text style={styles.paidByText}>
                         {isPaidByCurrentUser
                             ? 'You paid'
-                            : `${paidByUser.name} paid`}
+                            : `${paidByUser?.name || 'Unknown user'} paid`}
                     </Text>
                 </View>
                 <View style={styles.expenseAmount}>
@@ -62,11 +62,21 @@ const GroupDetailsScreen = ({ route, navigation }) => {
         );
     };
 
+    if (!groupId) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.centered}>
+                    <Text style={styles.emptyText}>Invalid group.</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     if (!group) {
         return (
             <SafeAreaView style={styles.container}>
                 <View style={styles.centered}>
-                    <Text>Loading...</Text>
+                    <Text style={styles.emptyText}>Group not found.</Text>
                 </View>
             </SafeAreaView>
         );
@@ -100,8 +110,8 @@ const GroupDetailsScreen = ({ route, navigation }) => {
                     {group.members.map(memberId => {
                         const user = getUserById(memberId);
                         return (
-                            <Text key={user.id} style={styles.memberName}>
-                                {user.id === '1' ? 'You' : user.name}
+                            <Text key={memberId} style={styles.memberName}>
+                                {user?.id === '1' ? 'You' : user?.name || 'Unknown user'}
                             </Text>
                         );
                     })}
