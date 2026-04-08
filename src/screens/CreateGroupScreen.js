@@ -10,46 +10,39 @@ import {
     ScrollView,
     Alert
 } from 'react-native';
-import { USERS } from '../data/mockData';
+import { useApp } from '../context/AppContext';
 import theme from '../theme';
 
 const CreateGroupScreen = ({ navigation }) => {
+    const { users, addGroup } = useApp();
     const [groupName, setGroupName] = useState('');
-    const [selectedMembers, setSelectedMembers] = useState({ '1': true }); // Current user is always selected
+    const [selectedMembers, setSelectedMembers] = useState({ '1': true });
 
     const toggleMemberSelection = (memberId) => {
-        if (memberId === '1') return; // Cannot deselect yourself
-
-        setSelectedMembers(prev => ({
-            ...prev,
-            [memberId]: !prev[memberId]
-        }));
+        if (memberId === '1') return;
+        setSelectedMembers(prev => ({ ...prev, [memberId]: !prev[memberId] }));
     };
 
     const handleCreateGroup = () => {
-        // Validate inputs
         if (!groupName.trim()) {
             Alert.alert('Error', 'Please enter a group name');
             return;
         }
 
-        const selectedMemberIds = Object.keys(selectedMembers).filter(id => selectedMembers[id]);
-        if (selectedMemberIds.length < 2) {
+        const memberIds = Object.keys(selectedMembers).filter(id => selectedMembers[id]);
+        if (memberIds.length < 2) {
             Alert.alert('Error', 'Please select at least one other member');
             return;
         }
 
-        // Create new group object (placeholder until persistence is wired)
-        const _newGroup = {
-            id: String(Date.now()), // Generate a unique ID
-            name: groupName,
-            members: selectedMemberIds,
+        addGroup({
+            id: String(Date.now()),
+            name: groupName.trim(),
+            members: memberIds,
             expenses: [],
             createdAt: new Date().toISOString(),
-        };
+        });
 
-
-        // Navigate back
         Alert.alert('Success', 'Group created successfully', [
             { text: 'OK', onPress: () => navigation.goBack() }
         ]);
@@ -60,17 +53,11 @@ const CreateGroupScreen = ({ navigation }) => {
             <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
 
             <View style={styles.header}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Text style={styles.backButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>Create Group</Text>
-                <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={handleCreateGroup}
-                >
+                <TouchableOpacity style={styles.saveButton} onPress={handleCreateGroup}>
                     <Text style={styles.saveButtonText}>Save</Text>
                 </TouchableOpacity>
             </View>
@@ -90,23 +77,21 @@ const CreateGroupScreen = ({ navigation }) => {
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Select Members</Text>
                     <View style={styles.membersContainer}>
-                        {USERS.map(user => (
+                        {users.map(user => (
                             <TouchableOpacity
                                 key={user.id}
                                 style={[
                                     styles.memberItem,
                                     selectedMembers[user.id] && styles.selectedMemberItem,
-                                    user.id === '1' && styles.currentUserItem
+                                    user.id === '1' && styles.currentUserItem,
                                 ]}
                                 onPress={() => toggleMemberSelection(user.id)}
-                                disabled={user.id === '1'} // Cannot deselect yourself
+                                disabled={user.id === '1'}
                             >
-                                <Text
-                                    style={[
-                                        styles.memberItemText,
-                                        selectedMembers[user.id] && styles.selectedMemberItemText
-                                    ]}
-                                >
+                                <Text style={[
+                                    styles.memberItemText,
+                                    selectedMembers[user.id] && styles.selectedMemberItemText,
+                                ]}>
                                     {user.id === '1' ? 'You' : user.name}
                                 </Text>
                             </TouchableOpacity>
@@ -119,10 +104,7 @@ const CreateGroupScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: theme.colors.background,
-    },
+    container: { flex: 1, backgroundColor: theme.colors.background },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -131,40 +113,14 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: theme.colors.border,
     },
-    backButton: {
-        padding: theme.sizes.spacing.xs,
-    },
-    backButtonText: {
-        ...theme.fonts.medium,
-        fontSize: theme.sizes.sm,
-        color: theme.colors.textLight,
-    },
-    title: {
-        ...theme.fonts.bold,
-        fontSize: theme.sizes.lg,
-        color: theme.colors.text,
-    },
-    saveButton: {
-        padding: theme.sizes.spacing.xs,
-    },
-    saveButtonText: {
-        ...theme.fonts.medium,
-        fontSize: theme.sizes.sm,
-        color: theme.colors.primary,
-    },
-    formContainer: {
-        flex: 1,
-        padding: theme.sizes.spacing.md,
-    },
-    inputGroup: {
-        marginBottom: theme.sizes.spacing.lg,
-    },
-    label: {
-        ...theme.fonts.medium,
-        fontSize: theme.sizes.sm,
-        color: theme.colors.text,
-        marginBottom: theme.sizes.spacing.sm,
-    },
+    backButton: { padding: theme.sizes.spacing.xs },
+    backButtonText: { ...theme.fonts.medium, fontSize: theme.sizes.sm, color: theme.colors.textLight },
+    title: { ...theme.fonts.bold, fontSize: theme.sizes.lg, color: theme.colors.text },
+    saveButton: { padding: theme.sizes.spacing.xs },
+    saveButtonText: { ...theme.fonts.medium, fontSize: theme.sizes.sm, color: theme.colors.primary },
+    formContainer: { flex: 1, padding: theme.sizes.spacing.md },
+    inputGroup: { marginBottom: theme.sizes.spacing.lg },
+    label: { ...theme.fonts.medium, fontSize: theme.sizes.sm, color: theme.colors.text, marginBottom: theme.sizes.spacing.sm },
     input: {
         height: 50,
         borderWidth: 1,
@@ -176,10 +132,7 @@ const styles = StyleSheet.create({
         ...theme.fonts.regular,
         fontSize: theme.sizes.md,
     },
-    membersContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-    },
+    membersContainer: { flexDirection: 'row', flexWrap: 'wrap' },
     memberItem: {
         marginRight: theme.sizes.spacing.md,
         marginBottom: theme.sizes.spacing.md,
@@ -190,22 +143,10 @@ const styles = StyleSheet.create({
         borderColor: theme.colors.border,
         backgroundColor: theme.colors.surface,
     },
-    selectedMemberItem: {
-        backgroundColor: theme.colors.tertiary,
-        borderColor: theme.colors.tertiary,
-    },
-    currentUserItem: {
-        borderColor: theme.colors.primary,
-        borderWidth: 2,
-    },
-    memberItemText: {
-        ...theme.fonts.medium,
-        fontSize: theme.sizes.sm,
-        color: theme.colors.text,
-    },
-    selectedMemberItemText: {
-        color: theme.colors.surface,
-    },
+    selectedMemberItem: { backgroundColor: theme.colors.tertiary, borderColor: theme.colors.tertiary },
+    currentUserItem: { borderColor: theme.colors.primary, borderWidth: 2 },
+    memberItemText: { ...theme.fonts.medium, fontSize: theme.sizes.sm, color: theme.colors.text },
+    selectedMemberItemText: { color: theme.colors.surface },
 });
 
 export default CreateGroupScreen;
