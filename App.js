@@ -1,7 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { AppProvider } from './src/context/AppContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
-  return <AppNavigator />;
+  return (
+    <AppProvider>
+      <AppNavigator />
+    </AppProvider>
+  );
 }
